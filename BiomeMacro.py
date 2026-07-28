@@ -9,7 +9,10 @@ import customtkinter
 import logging
 import sys
 import ctypes
+from win11toast import toast
 from PIL import Image
+
+footerText = "maxstellar's Biome Macro | v2.4.1"
 
 logging.basicConfig(
     filename='crash.log',  # Optional: Specify a file to log to
@@ -53,10 +56,10 @@ if not os.path.exists(config_name):
     print("Config file not found, creating one...")
     config['Webhook'] = {'webhook_url': "", 'private_server': "", "discord_user_id": "", 'multi_webhook': "0",
                          'multi_webhook_urls': ""}
-    config['Macro'] = {'aura_detection': "1", "aura_ping": "0", "min_rarity_to_ping": "", "last_roblox_version": "", "roblox_username": "", "seen_notice": "0"}
+    config['Macro'] = {'aura_detection': "1", "aura_ping": "0", "min_rarity_to_ping": "", "last_roblox_version": "", "roblox_username": ""}
     config['Biomes'] = {'windy': "Message", 'snowy': "Message", 'rainy': "Message", 'sand_storm': "Message",
                         'hell': "Message", "starfall": "Message",
-                        "corruption": "Message", "null": "Message", "pumpkin_moon": "Message", "graveyard": "Message"}
+                        "corruption": "Message", "null": "Message", "heaven": "Message", "singularity": "Message"}
     with open(config_name, 'w') as conffile:
         config.write(conffile)
 config.read(config_name)
@@ -70,7 +73,8 @@ webhook_urls_string = customtkinter.StringVar(root, config['Webhook']['multi_web
 webhook_urls = webhook_urls_string.get().split()
 last_roblox_version = config['Macro']['last_roblox_version']
 roblox_username = customtkinter.StringVar(root, config['Macro']['roblox_username'])
-try:
+
+try: 
     seen_notice = customtkinter.StringVar(root, config['Macro']['seen_notice'])
 except:
     seen_notice = customtkinter.StringVar(root, "0")
@@ -96,8 +100,9 @@ roblox_log_path = None
 roblox_version = None
 biome_colors = {"NORMAL": "ffffff", "SAND STORM": "F4C27C",
                 "HELL": "5C1219", "STARFALL": "6784E0", "CORRUPTION": "9042FF", "NULL": "000000", "GLITCHED": "65FF65",
-                "WINDY": "91F7FF", "SNOWY": "C4F5F6", "RAINY": "4385FF", "DREAMSPACE": "ff7dff",
-                "PUMPKIN MOON": "d55f09", "GRAVEYARD": "FFFFFF", "BLOOD RAIN": "ff0000", "CYBERSPACE": "2c53a7", "HEAVEN": "e8c49e", "SINGULARITY": "ffa375"}
+                "WINDY": "91F7FF", "SNOWY": "C4F5F6", "RAINY": "4385FF", "DREAMSPACE": "ff7dff", "SINGULARITY": "ffaf87", 
+                "CYBERSPACE": "3881ff", "HEAVEN": "fff587",
+                "EGGLAND": "a6ff4d", "PUMPKIN MOON": "d55f09", "GRAVEYARD": "FFFFFF", "BLOOD RAIN": "ff0000"}
 started = False
 stopped = False
 paused = False
@@ -114,18 +119,25 @@ hell = customtkinter.StringVar(root, config['Biomes']['hell'])
 starfall = customtkinter.StringVar(root, config['Biomes']['starfall'])
 corruption = customtkinter.StringVar(root, config['Biomes']['corruption'])
 null = customtkinter.StringVar(root, config['Biomes']['null'])
+heaven = customtkinter.StringVar(root, config['Biomes']['heaven'])
 glitched = customtkinter.StringVar(root, "Message")
 dreamspace = customtkinter.StringVar(root, "Message")
 cyberspace = customtkinter.StringVar(root, "Message")
+singularity = customtkinter.StringVar(root, config['Biomes']['singularity'])
 try:
-    heaven = customtkinter.StringVar(root, config['Biomes']['heaven'])
-    heaven = customtkinter.StringVar(root, config['Biomes']['singularity'])
+    pumpkin_moon = customtkinter.StringVar(root, "Message")
+    graveyard = customtkinter.StringVar(root, "Message")
+    eggland = customtkinter.StringVar(root, "Message")
 except:
-    config.set('Biomes', "heaven", "Message")
-    config.set('Biomes', "singularity", "Message")
+    config.set('Biomes', "pumpkin_moon", "Message")
     with open(config_name, 'w+') as configfile:
         config.write(configfile)
-blood_rain = customtkinter.StringVar(root, "Message")
+    config.set('Biomes', "graveyard", "Message")
+    with open(config_name, 'w+') as configfile:
+        config.write(configfile)
+    blood_rain = customtkinter.StringVar(root, "Message")
+    eggland = customtkinter.StringVar(root, "Message")
+
 
 
 def get_biome_color(biome):
@@ -155,14 +167,14 @@ def stop():
                 ending_webhook = discord_webhook.DiscordWebhook(url=webhookURL.get())
                 ending_embed = discord_webhook.DiscordEmbed(
                     description="[" + time.strftime('%H:%M:%S') + "]: Macro stopped.")
-                ending_embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                ending_embed.set_footer(text=footerText,
                                         icon_url="https://maxstellar.github.io/maxstellar.png")
                 ending_webhook.add_embed(ending_embed)
                 ending_webhook.execute()
         else:
             ending_embed = discord_webhook.DiscordEmbed(
                 description="[" + time.strftime('%H:%M:%S') + "]: Macro stopped.")
-            ending_embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+            ending_embed.set_footer(text=footerText,
                                     icon_url="https://maxstellar.github.io/maxstellar.png")
             for url in webhook_urls:
                 ending_webhook = discord_webhook.DiscordWebhook(url=url)
@@ -265,7 +277,7 @@ def check_for_hover_text(file):
                                         stop()
                                         return
                                     webhook = discord_webhook.DiscordWebhook(url=webhookURL.get())
-                                    if event == "NORMAL":
+                                    if event == "NORMAL" or event == "EGGLAND":
                                         if last_event is not None:
                                             print(time.strftime('%H:%M:%S') + f": Biome Ended - " + last_event)
                                             try:
@@ -274,7 +286,7 @@ def check_for_hover_text(file):
                                                         title="[" + time.strftime('%H:%M:%S') + "]",
                                                         color=get_biome_color(last_event),
                                                         description="> ## Biome Ended - " + last_event)
-                                                    embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                                                    embed.set_footer(text=footerText,
                                                                      icon_url="https://maxstellar.github.io/maxstellar.png")
                                                     embed.set_thumbnail(
                                                         url="https://maxstellar.github.io/biome_thumb/" + last_event.replace(
@@ -292,10 +304,9 @@ def check_for_hover_text(file):
                                                 embed = discord_webhook.DiscordEmbed(
                                                     title="[" + time.strftime('%H:%M:%S') + "]",
                                                     color=get_biome_color(event),
-                                                    description="> ## Biome Started - " + event)
-                                                embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                                                    description="> ## Biome Started - " + event + "\n" + psURL.get())
+                                                embed.set_footer(text=footerText,
                                                                  icon_url="https://maxstellar.github.io/maxstellar.png")
-                                                embed.add_embed_field(name="Private Server Link", value=psURL.get())
                                                 embed.set_thumbnail(
                                                     url="https://maxstellar.github.io/biome_thumb/" + event.replace(" ", "_") + ".png")
                                                 webhook.add_embed(embed)
@@ -307,7 +318,7 @@ def check_for_hover_text(file):
                                         except:
                                             pass
                                 else:
-                                    if event == "NORMAL":
+                                    if event == "NORMAL" or event == "EGGLAND":
                                         if last_event is not None:
                                             print(time.strftime('%H:%M:%S') + f": Biome Ended - " + last_event)
                                             try:
@@ -317,8 +328,8 @@ def check_for_hover_text(file):
                                                         embed = discord_webhook.DiscordEmbed(
                                                             title="[" + time.strftime('%H:%M:%S') + "]",
                                                             color=get_biome_color(last_event),
-                                                            description="> ## Biome Ended - " + last_event)
-                                                        embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                                                            description="> ## Biome Ended - " + last_event + "\n" + psURL.get())
+                                                        embed.set_footer(text=footerText,
                                                                          icon_url="https://maxstellar.github.io/maxstellar.png")
                                                         embed.set_thumbnail(
                                                             url="https://maxstellar.github.io/biome_thumb/" + last_event.replace(
@@ -337,10 +348,9 @@ def check_for_hover_text(file):
                                                     embed = discord_webhook.DiscordEmbed(
                                                         title="[" + time.strftime('%H:%M:%S') + "]",
                                                         color=get_biome_color(event),
-                                                        description="> ## Biome Started - " + event)
-                                                    embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                                                        description="> ## Biome Started - " + event + "\n" + psURL.get())
+                                                    embed.set_footer(text=footerText,
                                                                      icon_url="https://maxstellar.github.io/maxstellar.png")
-                                                    embed.add_embed_field(name="Private Server Link", value=psURL.get())
                                                     embed.set_thumbnail(
                                                         url="https://maxstellar.github.io/biome_thumb/" + event.replace(" ", "_") + ".png")
                                                     webhook = discord_webhook.DiscordWebhook(url=url)
@@ -367,7 +377,7 @@ def check_for_hover_text(file):
                 close_webhook = discord_webhook.DiscordWebhook(url=webhookURL.get())
                 close_embed = discord_webhook.DiscordEmbed(
                     description="[" + time.strftime('%H:%M:%S') + "]: Roblox was closed/crashed.")
-                close_embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                close_embed.set_footer(text=footerText,
                                        icon_url="https://maxstellar.github.io/maxstellar.png")
                 close_webhook.add_embed(close_embed)
                 close_webhook.execute()
@@ -376,7 +386,7 @@ def check_for_hover_text(file):
                     close_webhook = discord_webhook.DiscordWebhook(url=url)
                     close_embed = discord_webhook.DiscordEmbed(
                         description="[" + time.strftime('%H:%M:%S') + "]: Roblox was closed/crashed.")
-                    close_embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+                    close_embed.set_footer(text=footerText,
                                            icon_url="https://maxstellar.github.io/maxstellar.png")
                     close_webhook.add_embed(close_embed)
                     close_webhook.execute()
@@ -477,6 +487,18 @@ def set_null(new_val):
         config.write(configfile)
 
 
+def set_heaven(new_val):
+    config.set('Biomes', "heaven", new_val)
+    with open(config_name, 'w+') as configfile:
+        config.write(configfile)
+
+
+def set_singularity(new_val):
+    config.set('Biomes', "singularity", new_val)
+    with open(config_name, 'w+') as configfile:
+        config.write(configfile)
+
+
 def set_pumpkin_moon(new_val):
     config.set('Biomes', "pumpkin_moon", new_val)
     with open(config_name, 'w+') as configfile:
@@ -487,6 +509,7 @@ def set_graveyard(new_val):
     config.set('Biomes', "graveyard", new_val)
     with open(config_name, 'w+') as configfile:
         config.write(configfile)
+
 
 
 def manage_tlw():
@@ -520,6 +543,11 @@ def manage_tlw():
                                                         variable=sand_storm,
                                                         command=set_sand_storm)
         sand_storm_toggle.grid(row=4, column=1, sticky="w", padx=10, pady=10)
+        #pumpkin_moon_toggle = customtkinter.CTkOptionMenu(tlw, values=["Message", "Ping", "Nothing"],
+        #                                                font=customtkinter.CTkFont(family="Segoe UI", size=20),
+        #                                                variable=pumpkin_moon,
+        #                                                command=set_pumpkin_moon)
+        #pumpkin_moon_toggle.grid(row=5, column=1, sticky="w", padx=10, pady=10)
         hell_toggle = customtkinter.CTkOptionMenu(tlw, values=["Message", "Ping", "Nothing"],
                                                   font=customtkinter.CTkFont(family="Segoe UI", size=20), variable=hell,
                                                   command=set_hell)
@@ -532,34 +560,74 @@ def manage_tlw():
                                                         font=customtkinter.CTkFont(family="Segoe UI", size=20),
                                                         variable=corruption, command=set_corruption)
         corruption_toggle.grid(row=3, column=3, sticky="w", padx=10, pady=10)
+        
+        heaven_toggle = customtkinter.CTkOptionMenu(tlw, values=["Message", "Ping", "Nothing"],
+                                                  font=customtkinter.CTkFont(family="Segoe UI", size=20), variable=heaven,
+                                                  command=set_heaven)
+        heaven_toggle.grid(row=4, column=3, sticky="w", padx=10, pady=10)
+
+        singularity_toggle = customtkinter.CTkOptionMenu(tlw, values=["Message", "Ping"],
+                                                  font=customtkinter.CTkFont(family="Segoe UI", size=20), variable=singularity,
+                                                  command=set_singularity)
+        singularity_toggle.grid(row=5, column=3, sticky="w", padx=10, pady=10)
+
         null_toggle = customtkinter.CTkOptionMenu(tlw, values=["Message", "Ping", "Nothing"],
                                                   font=customtkinter.CTkFont(family="Segoe UI", size=20), variable=null,
                                                   command=set_null)
-        null_toggle.grid(row=4, column=3, sticky="w", padx=10, pady=10)
+        null_toggle.grid(row=5, column=1, sticky="w", padx=10, pady=10)
+        
+        # graveyard_toggle = customtkinter.CTkOptionMenu(tlw, values=["Message", "Ping", "Nothing"],
+        #                                           font=customtkinter.CTkFont(family="Segoe UI", size=20), variable=graveyard,
+        #                                           command=set_graveyard)
+        # graveyard_toggle.grid(row=5, column=3, sticky="w", padx=10, pady=10)
+        
         windy_label = customtkinter.CTkLabel(tlw, text="Windy",
                                              font=customtkinter.CTkFont(family="Segoe UI", size=20))
         windy_label.grid(column=0, row=1, padx=(10, 0), pady=10, sticky="w")
+        
         snowy_label = customtkinter.CTkLabel(tlw, text="Snowy",
                                              font=customtkinter.CTkFont(family="Segoe UI", size=20))
         snowy_label.grid(column=0, row=2, padx=(10, 0), pady=10, sticky="w")
+        
         rainy_label = customtkinter.CTkLabel(tlw, text="Rainy",
                                              font=customtkinter.CTkFont(family="Segoe UI", size=20))
         rainy_label.grid(column=0, row=3, padx=(10, 0), pady=10, sticky="w")
+        
         sand_storm_label = customtkinter.CTkLabel(tlw, text="Sand Storm",
                                                   font=customtkinter.CTkFont(family="Segoe UI", size=20))
         sand_storm_label.grid(column=0, row=4, padx=(10, 0), pady=10, sticky="w")
+
+        null_label = customtkinter.CTkLabel(tlw, text="Null",
+                                            font=customtkinter.CTkFont(family="Segoe UI", size=20))
+        null_label.grid(column=0, row=5, padx=(10, 0), pady=10, sticky="w")
+        
+        # pumpkin_moon_label = customtkinter.CTkLabel(tlw, text="Pumpkin Moon",
+        #                                           font=customtkinter.CTkFont(family="Segoe UI", size=20))
+        # pumpkin_moon_label.grid(column=0, row=5, padx=(10, 0), pady=10, sticky="w")
+        
         hell_label = customtkinter.CTkLabel(tlw, text="Hell",
                                             font=customtkinter.CTkFont(family="Segoe UI", size=20))
         hell_label.grid(column=2, row=1, padx=(10, 0), pady=10, sticky="w")
+        
         starfall_label = customtkinter.CTkLabel(tlw, text="Starfall",
                                                 font=customtkinter.CTkFont(family="Segoe UI", size=20))
         starfall_label.grid(column=2, row=2, padx=(10, 0), pady=10, sticky="w")
+        
         corruption_label = customtkinter.CTkLabel(tlw, text="Corruption",
                                                   font=customtkinter.CTkFont(family="Segoe UI", size=20))
         corruption_label.grid(column=2, row=3, padx=(10, 0), pady=10, sticky="w")
-        null_label = customtkinter.CTkLabel(tlw, text="Null",
+        
+        heaven_label = customtkinter.CTkLabel(tlw, text="Heaven",
                                             font=customtkinter.CTkFont(family="Segoe UI", size=20))
-        null_label.grid(column=2, row=4, padx=(10, 0), pady=10, sticky="w")
+        heaven_label.grid(column=2, row=4, padx=(10, 0), pady=10, sticky="w")
+
+        singularity_label = customtkinter.CTkLabel(tlw, text="Singularity",
+                                            font=customtkinter.CTkFont(family="Segoe UI", size=20))
+        singularity_label.grid(column=2, row=5, padx=(10, 0), pady=10, sticky="w")
+
+        # graveyard_label = customtkinter.CTkLabel(tlw, text="Graveyard",
+        #                                     font=customtkinter.CTkFont(family="Segoe UI", size=20))
+        # graveyard_label.grid(column=2, row=5, padx=(10, 0), pady=10, sticky="w")
         tlw.after(0, tlw.focus)
         tlw.after(100, lambda: tlw.resizable(False, False))
         tlw.after(250, lambda: tlw.iconbitmap(dirname + '\\icon.ico'))
@@ -609,7 +677,7 @@ def init():
     # start webhook
     starting_embed = discord_webhook.DiscordEmbed(
         description="[" + time.strftime('%H:%M:%S') + "]: Macro started!")
-    starting_embed.set_footer(text="maxstellar's Biome Macro | v2.3",
+    starting_embed.set_footer(text=footerText,
                               icon_url="https://maxstellar.github.io/maxstellar.png")
     if multi_webhook.get() != "1":
         if "discord" not in webhookURL.get() or "https://" not in webhookURL.get():
