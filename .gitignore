@@ -1,3 +1,5 @@
 .github/
 COPYING
-README.md
+# README.md
+config.ini
+crash.log
