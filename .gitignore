@@ -1,3 +1,8 @@
-.github/
-COPYING
-README.md
+__pycache__/
+*.pyc
+config.ini
+crash.log
+build/
+dist/
+*.spec
+venv/

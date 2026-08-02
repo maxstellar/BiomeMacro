@@ -1,0 +1,30 @@
+{
+  "_comment": [
+    "Biome registry. To add a biome the game just released, copy an entry and edit it.",
+    "  name      - MUST match the rich-presence hoverText exactly (uppercase, as Roblox logs it).",
+    "  label     - what shows in the Configure Pings window.",
+    "  color     - hex embed colour, no leading '#'.",
+    "  thumbnail - filename under thumb_base_url (see BiomeMacro.py). Defaults to name with '_' for spaces.",
+    "  default   - Message | Ping | Nothing  (only used the first time, before it's saved to config.ini)",
+    "  everyone  - true sends @everyone regardless of the per-biome ping setting.",
+    "  configurable - false hides it from Configure Pings and pins it to its default,",
+    "                 matching how the rare biomes have always been hard-coded.",
+    "Unknown biomes still get reported with a fallback colour, so a game update can't silence the macro."
+  ],
+  "biomes": [
+    { "name": "WINDY",        "label": "Windy",        "color": "91F7FF", "default": "Message", "everyone": false },
+    { "name": "SNOWY",        "label": "Snowy",        "color": "C4F5F6", "default": "Message", "everyone": false },
+    { "name": "RAINY",        "label": "Rainy",        "color": "4385FF", "default": "Message", "everyone": false },
+    { "name": "SAND STORM",   "label": "Sand Storm",   "color": "F4C27C", "default": "Message", "everyone": false },
+    { "name": "HELL",         "label": "Hell",         "color": "5C1219", "default": "Message", "everyone": false },
+    { "name": "STARFALL",     "label": "Starfall",     "color": "6784E0", "default": "Message", "everyone": false },
+    { "name": "CORRUPTION",   "label": "Corruption",   "color": "9042FF", "default": "Message", "everyone": false },
+    { "name": "NULL",         "label": "Null",         "color": "000000", "default": "Message", "everyone": false },
+    { "name": "HEAVEN",       "label": "Heaven",       "color": "E8C49E", "default": "Message", "everyone": false },
+    { "name": "BLAZING SUN",  "label": "Blazing Sun",  "color": "FFB300", "default": "Message", "everyone": false, "thumbnail": "" },
+    { "name": "SINGULARITY",  "label": "Singularity",  "color": "FFA375", "default": "Message", "everyone": false, "configurable": false },
+    { "name": "DREAMSPACE",   "label": "Dreamspace",   "color": "FF7DFF", "default": "Message", "everyone": true,  "configurable": false },
+    { "name": "CYBERSPACE",   "label": "Cyberspace",   "color": "2C53A7", "default": "Message", "everyone": true,  "configurable": false },
+    { "name": "GLITCHED",     "label": "Glitched",     "color": "65FF65", "default": "Message", "everyone": true,  "configurable": false }
+  ]
+}
